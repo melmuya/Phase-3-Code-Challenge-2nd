@@ -1,0 +1,29 @@
+require 'sinatra/activerecord'
+require 'rake'
+
+namespace :db do
+  desc 'Create a new migration file'
+  task :create_migration do
+    migration_name = ENV['NAME']
+    raise 'Missing migration name. Usage: rake db:create_migration NAME=create_reviews' unless migration_name
+
+    migration_template = File.join('db', 'migrate', "#{Time.now.strftime('%Y%m%d%H%M%S')}_#{migration_name}.rb")
+
+    File.open(migration_template, 'w') do |file|
+      file.write("# Migration code goes here\n")
+    end
+
+    puts "Created migration file: #{migration_template}"
+  end
+
+  desc 'Migrate the database'
+  task :migrate do
+    ActiveRecord::Base.establish_connection(
+      adapter: 'sqlite3',
+      database: 'db/development.sqlite3'
+    )
+
+    ActiveRecord::Migration.verbose = true
+    ActiveRecord::Migrator.migrate('db/migrate')
+  end
+end
